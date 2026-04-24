@@ -174,3 +174,5 @@ The `Idempotency-Key` header is validated to be a well-formed UUID v4 before any
 
 ### 2. Rate Limiting
 Requests are throttled to **10 per minute per IP address** using DRF's built-in `AnonRateThrottle`. This protects the service from brute-force key enumeration and accidental retry storms from misconfigured clients.
+### 3, Idempotency keys storing in the database
+Idempotency keys and their associated responses are persisted in the database rather than held in memory. Storing them in memory (e.g. a Python dictionary) would mean that on any server restart — whether a crash, a deployment, or a routine reboot — the entire key store is wiped. A client that previously sent a request, received a successful response, and then retried after a restart would find no record of their key. The system would treat it as a brand new request, process the payment again, and double-charge the customer. That outcome directly defeats the entire purpose of idempotency. The database is the only safe place to store this state.
