@@ -12,6 +12,24 @@ A RESTful payment processing API that guarantees every payment is executed **exa
 
 ## Setup Instructions
 
+### Option 1 — Docker (Recommended)
+
+**Requirements:** Docker
+
+```bash
+# 1. Clone the repository and navigate to the project
+cd backend/Idempotency-gateway
+
+# 2. Build and start the container
+docker compose up --build
+```
+
+The API will be available at `http://localhost:8000`.
+
+---
+
+### Option 2 — Local (Python)
+
 **Requirements:** Python 3.11+
 
 ```bash
@@ -25,7 +43,8 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Apply migrations
+# 4. Create and apply migrations
+python manage.py makemigrations
 python manage.py migrate
 
 # 5. Start the server
@@ -38,7 +57,7 @@ The API will be available at `http://127.0.0.1:8000`.
 
 ## API Documentation
 
-### `POST /api/v1/process-payment`
+### `POST /process-payment`
 
 Processes a payment. Guaranteed idempotent via the `Idempotency-Key` header.
 
@@ -63,7 +82,7 @@ Processes a payment. Guaranteed idempotent via the `Idempotency-Key` header.
 ### Scenario 1 — First Request (Happy Path)
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/v1/process-payment \
+curl -X POST http://127.0.0.1:8000/process-payment \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
   -d '{"amount": 100, "currency": "GHS"}'
@@ -105,7 +124,7 @@ X-Cache-Hit: true
 ### Scenario 3 — Conflict (Same Key, Different Body)
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/v1/process-payment \
+curl -X POST http://127.0.0.1:8000/process-payment \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
   -d '{"amount": 500, "currency": "GHS"}'
